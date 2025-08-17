@@ -41,7 +41,7 @@ O UBY é um sistema de agendamento desenvolvido em Electron que oferece uma inte
 
 1. **Clone o repositório**:
    ```bash
-   git clone https://github.com/seu-usuario/UBY--Sistemas-Agendamento-1.0.0.git
+   git clone https://github.com/L34NDR0-DEV/UBY--Sistemas-Agendamento-1.0.0.git
    cd UBY--Sistemas-Agendamento-1.0.0
    ```
 

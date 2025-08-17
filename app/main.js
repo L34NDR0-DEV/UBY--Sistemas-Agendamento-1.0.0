@@ -747,7 +747,7 @@ const disableUpdates = process.env.DISABLE_UPDATES === 'true';
 autoUpdater.setFeedURL({
   provider: 'github',
   owner: 'L34NDR0-DEV',
-  repo: 'UBY--Sistemas-Agendamento'
+  repo: 'UBY--Sistemas-Agendamento-1.0.0'
 });
 
 if (disableUpdates) {
