@@ -1,0 +1,298 @@
+/* Estilos para ícones SVG */
+.icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
+    fill: currentColor;
+}
+
+/* Estados dos ícones */
+.icon.success {
+    color: #28a745;
+}
+
+.icon.error {
+    color: #dc3545;
+}
+
+.icon.warning {
+    color: #ffc107;
+}
+
+.icon.info {
+    color: #17a2b8;
+}
+
+.icon.sync svg {
+    stroke: #8b5cf6;
+    color: #8b5cf6;
+}
+
+.icon.connect svg {
+    stroke: #10b981;
+    color: #10b981;
+}
+
+.icon.disconnect svg {
+    stroke: #ef4444;
+    color: #ef4444;
+}
+
+.icon.save svg {
+    stroke: #059669;
+    color: #059669;
+}
+
+.icon.load svg {
+    stroke: #3b82f6;
+    color: #3b82f6;
+}
+
+.icon.database svg {
+    stroke: #6366f1;
+    color: #6366f1;
+}
+
+.icon.cache svg {
+    stroke: #f59e0b;
+    color: #f59e0b;
+}
+
+.icon.conflict svg {
+    stroke: #dc2626;
+    color: #dc2626;
+}
+
+.icon.resolve svg {
+    stroke: #059669;
+    color: #059669;
+}
+
+.icon.appointment svg {
+    stroke: #3b82f6;
+    color: #3b82f6;
+}
+
+.icon.notification svg {
+    stroke: #f59e0b;
+    color: #f59e0b;
+}
+
+.icon.share svg {
+    stroke: #8b5cf6;
+    color: #8b5cf6;
+}
+
+.icon.search svg {
+    stroke: #6b7280;
+    color: #6b7280;
+}
+
+.icon.online svg {
+    stroke: #10b981;
+    color: #10b981;
+}
+
+.icon.offline svg {
+    stroke: #6b7280;
+    color: #6b7280;
+}
+
+.icon.pending svg {
+    stroke: #f59e0b;
+    color: #f59e0b;
+}
+
+.icon.clean svg {
+    stroke: #6b7280;
+    color: #6b7280;
+}
+
+.icon.start svg {
+    stroke: #10b981;
+    color: #10b981;
+}
+
+.icon.stop svg {
+    stroke: #ef4444;
+    color: #ef4444;
+}
+
+.icon.restart svg {
+    stroke: #3b82f6;
+    color: #3b82f6;
+}
+
+.icon.close svg {
+    stroke: #6b7280;
+    color: #6b7280;
+}
+
+/* Tamanhos de ícone - Agora com mais opções */
+.icon.tiny {
+    width: 12px;
+    height: 12px;
+}
+
+.icon.small {
+    width: 16px;
+    height: 16px;
+}
+
+.icon.medium {
+    width: 24px;  /* Tamanho padrão aumentado */
+    height: 24px;
+}
+
+.icon.large {
+    width: 32px;  /* Aumentado de 20px para 32px */
+    height: 32px;
+}
+
+.icon.xlarge {
+    width: 48px;  /* Aumentado de 24px para 48px */
+    height: 48px;
+}
+
+.icon.xxlarge {
+    width: 64px;  /* Novo tamanho para ícones muito grandes */
+    height: 64px;
+}
+
+/* Tamanhos especiais para barra de tarefas e área de trabalho */
+.icon.taskbar {
+    width: 32px;
+    height: 32px;
+}
+
+.icon.desktop {
+    width: 48px;
+    height: 48px;
+}
+
+/* Animações */
+.icon.animate svg {
+    /* animation removida */
+}
+
+.icon.spin svg {
+    /* animation removida */
+}
+
+.icon.bounce svg {
+    /* animation removida */
+}
+
+/* Animações de ícones removidas para melhor performance */
+
+/* Estados de hover */
+.icon:hover svg {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* Ícones em botões */
+.btn .icon {
+    margin-right: 6px;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-icon:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-icon:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Ícones em status */
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.status-icon.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.status-icon.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.status-icon.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.status-icon.info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+/* Ícones em logs */
+.log-entry {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.log-entry .icon {
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.log-entry.success {
+    color: #10b981;
+}
+
+.log-entry.error {
+    color: #ef4444;
+}
+
+.log-entry.warning {
+    color: #f59e0b;
+}
+
+.log-entry.info {
+    color: #3b82f6;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .icon {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .icon.large {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .icon.xlarge {
+        width: 20px;
+        height: 20px;
+    }
+}

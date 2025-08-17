@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Círculo principal -->
+  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  
+  <!-- Seta circular de atualização -->
+  <path d="M8 12a4 4 0 0 1 8 0c0 1.5-.5 2.5-1.5 3.5L12 18l-2.5-2.5C8.5 14.5 8 13.5 8 12z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  
+  <!-- Seta superior -->
+  <path d="M12 6v6" stroke="currentColor" stroke-width="2"/>
+  <path d="M9 9l3-3 3 3" stroke="currentColor" stroke-width="2" fill="none"/>
+  
+  <!-- Ponto de destaque -->
+  <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+  
+  <!-- Efeito de brilho -->
+  <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>
+</svg>

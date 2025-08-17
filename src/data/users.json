@@ -1,0 +1,75 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "Nathan",
+      "password": "256899",
+      "role": "Gerente",
+      "displayName": "Nathan"
+    },
+    {
+      "id": 2,
+      "username": "Bruno Antônio",
+      "password": "062542",
+      "role": "Sênior",
+      "displayName": "Bruno Antônio"
+    },
+    {
+      "id": 3,
+      "username": "Leandro",
+      "password": "212010",
+      "role": "Atendente",
+      "displayName": "Leandro"
+    },
+    {
+      "id": 4,
+      "username": "Otávio",
+      "password": "498732",
+      "role": "Atendente",
+      "displayName": "Otávio"
+    },
+    {
+      "id": 5,
+      "username": "Taiane",
+      "password": "105471",
+      "role": "Sênior",
+      "displayName": "Taiane"
+    },
+    {
+      "id": 6,
+      "username": "Gustavo",
+      "password": "451893",
+      "role": "Sênior",
+      "displayName": "Gustavo"
+    },
+    {
+      "id": 7,
+      "username": "Bruno Felix",
+      "password": "225846",
+      "role": "Sênior",
+      "displayName": "Bruno Felix"
+    },
+    {
+      "id": 8,
+      "username": "Matheus",
+      "password": "885479",
+      "role": "Atendente",
+      "displayName": "Matheus"
+    },
+    {
+      "id": 9,
+      "username": "Gelianes",
+      "password": "234680",
+      "role": "Atendente",
+      "displayName": "Gelianes"
+    },
+    {
+      "id": 10,
+      "username": "Guilherme",
+      "password": "256991",
+      "role": "Atendente",
+      "displayName": "Guilherme"
+    }
+    
+  ]
+}

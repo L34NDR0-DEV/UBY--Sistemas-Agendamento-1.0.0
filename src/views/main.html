@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.tile.openstreetmap.org; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' ws://localhost:* http://localhost:* https://localhost:* https://cdn.socket.io https://nominatim.openstreetmap.org;">
+    <title>UBY - Sistema de Agendamentos</title>
+    
+    <!-- Configurações de ícone da aplicação -->
+    <link rel="icon" type="image/x-icon" href="../../assets/logo.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="../../assets/logo.ico">
+  <link rel="apple-touch-icon" href="../../assets/logo.ico">
+  <meta name="msapplication-TileImage" content="../../assets/logo.ico">
+    
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/notifications.css">
+    <link rel="stylesheet" href="../styles/updater.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Preloader para garantir carregamento da logo -->
+    <div id="appPreloader" class="app-preloader">
+        <div class="preloader-content">
+            <div class="preloader-logo">
+                <img src="../../assets/logo.png" alt="UBY Logo" class="preloader-logo-image" id="preloaderLogo">
+            </div>
+            <div class="preloader-spinner">
+                <div class="spinner"></div>
+            </div>
+            <div class="preloader-text">Carregando UBY Agendamentos...</div>
+        </div>
+    </div>
+
+    <!-- Nova Barra de Janela Única -->
+    <div class="custom-window-bar">
+        <div class="window-title-area">
+            <span class="app-window-title">UBY - Gestão de Agendamentos</span>
+        </div>
+        <div class="window-action-buttons">
+            <button class="win-btn win-minimize" id="minimizeBtn">
+                <svg viewBox="0 0 10 10">
+                    <path d="M0,5 L10,5" stroke="currentColor" stroke-width="1"/>
+                </svg>
+            </button>
+            <button class="win-btn win-maximize" id="maximizeBtn">
+                <svg viewBox="0 0 10 10">
+                    <rect x="1" y="1" width="8" height="8" stroke="currentColor" stroke-width="1" fill="none"/>
+                </svg>
+            </button>
+            <button class="win-btn win-close" id="closeBtn">
+                <svg viewBox="0 0 10 10">
+                    <path d="M1,1 L9,9 M9,1 L1,9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header principal -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="../../assets/logo.png" alt="UBY Logo" class="header-logo-image">
+                </div>
+                <span class="app-title">UBY - Agendamentos</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <button class="header-btn user-btn" id="userName" disabled>
+                <div class="user-avatar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <span class="btn-text" id="userNameText"></span>
+            </button>
+        </div>
+        
+        <div class="header-right">
+            <!-- Status de Conexão como botão não clicável -->
+            <button class="header-btn connection-btn" id="connectionStatus" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M2 12h20"></path>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <span class="btn-text">Online</span>
+                <div class="status-dot online" id="statusDot"></div>
+            </button>
+
+            <button class="header-btn som-btn" id="soundBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                <span class="btn-text">Som e Voz</span>
+            </button>
+            
+
+            
+            <button class="header-btn theme-btn" id="themeBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <span class="btn-text">Tema</span>
+            </button>
+            
+            <button class="header-btn" id="collapseBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"></path>
+                </svg>
+                <span class="btn-text">Recolher</span>
+            </button>
+            
+            <button class="header-btn sair-btn" id="exitBtn" onclick="handleLogout()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                </svg>
+                <span class="btn-text">Sair</span>
+            </button>
+        </div>
+        
+        <!-- Painel de Som e Voz -->
+        <div class="sound-panel" id="soundPanel">
+            <div class="sound-header">
+                <h3>Configurações de Áudio</h3>
+            </div>
+            
+            <!-- Seção de Sons -->
+            <div class="audio-section">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                    </svg>
+                    Sons e Efeitos
+                </h4>
+                
+                <div class="sound-controls">
+                    <div class="sound-option">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="soundEnabled" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span>Habilitar Sons</span>
+                    </div>
+                    
+                    <div class="volume-control">
+                        <label>Volume dos Sons: <span id="soundVolumeValue">70%</span></label>
+                        <input type="range" id="soundVolumeSlider" min="0" max="100" value="70" class="volume-slider">
+                    </div>
+                    
+
+                </div>
+            </div>
+            
+            <!-- Seção de Voz -->
+            <div class="audio-section">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                    Notificações por Voz (Google Feminina)
+                </h4>
+                
+                <div class="voice-controls">
+                    <div class="sound-option">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="voiceEnabled" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span>Habilitar Voz</span>
+                    </div>
+                    
+                    <div class="voice-info">
+                        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                            Voz configurada automaticamente para Google Feminina em Português
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </header>
+
+    <!-- Container de Notificações (removido - agora usa painel dropdown) -->
+
+    <!-- Painel de controle removido - funcionalidades agora no header -->
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <!-- Seção de criação de agendamento -->
+        <section class="create-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    Criar Novo Agendamento
+                </h2>
+            </div>
+            
+            <form class="agendamento-form" id="agendamentoForm">
+                <!-- Informações Básicas -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações Básicas
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="data">
+                                <i class="fas fa-calendar-alt"></i>
+                                Data *
+                            </label>
+                            <input type="date" id="data" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="horario">
+                                <i class="fas fa-clock"></i>
+                                Horário *
+                            </label>
+                            <input type="time" id="horario" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nomeCliente">
+                                <i class="fas fa-user"></i>
+                                Nome do Cliente *
+                            </label>
+                            <input type="text" id="nomeCliente" placeholder="Nome completo do cliente" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="numeroContato">
+                                <i class="fas fa-phone"></i>
+                                Número de Contato *
+                            </label>
+                            <input type="tel" id="numeroContato" placeholder="(99) 99999-9999" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="atendente">
+                                <i class="fas fa-user-tie"></i>
+                                Atendente *
+                            </label>
+                            <input type="text" id="atendente" placeholder="Nome do atendente" required readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="status">
+                                <i class="fas fa-info-circle"></i>
+                                Status *
+                            </label>
+                            <select id="status" required>
+                                <option value="">Selecione o status...</option>
+                                <option value="Com Motorista">Com Motorista</option>
+                                <option value="Aguardando Motorista">Aguardando Motorista</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cidade">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Cidade *
+                            </label>
+                            <select id="cidade" required>
+                                <option value="">Selecione a cidade...</option>
+                                <optgroup label="Minas Gerais">
+                                    <option value="ALPINÓPOLIS">ALPINÓPOLIS</option>
+                                    <option value="ALTEROSA">ALTEROSA</option>
+                                    <option value="ARCEBURGO">ARCEBURGO</option>
+                                    <option value="AREADO">AREADO</option>
+                                    <option value="BAMBUÍ">BAMBUÍ</option>
+                                    <option value="BANDEIRA DO SUL">BANDEIRA DO SUL</option>
+                                    <option value="BOA ESPERANÇA">BOA ESPERANÇA</option>
+                                    <option value="BOM JESUS DA PENHA">BOM JESUS DA PENHA</option>
+                                    <option value="BOTELHOS">BOTELHOS</option>
+                                    <option value="CABO VERDE">CABO VERDE</option>
+                                    <option value="CAMPESTRE">CAMPESTRE</option>
+                                    <option value="CAMPO DO MEIO">CAMPO DO MEIO</option>
+                                    <option value="CAMPOS GERAIS">CAMPOS GERAIS</option>
+                                    <option value="CARMO DO RIO CLARO">CARMO DO RIO CLARO</option>
+                                    <option value="CAPITÓLIO">CAPITÓLIO</option>
+                                    <option value="CONCEIÇÃO DA APARECIDA">CONCEIÇÃO DA APARECIDA</option>
+                                    <option value="GUAPÉ">GUAPÉ</option>
+                                    <option value="GUARANÉSIA">GUARANÉSIA</option>
+                                    <option value="ILICÍNEA">ILICÍNEA</option>
+                                    <option value="JACUÍ">JACUÍ</option>
+                                    <option value="JURUAIA">JURUAIA</option>
+                                    <option value="MONTE BELO">MONTE BELO</option>
+                                    <option value="MONTE SANTO DE MINAS">MONTE SANTO DE MINAS</option>
+                                    <option value="MUZAMBINHO">MUZAMBINHO</option>
+                                    <option value="NEPOMUCENO">NEPOMUCENO</option>
+                                    <option value="NOVA RESENDE">NOVA RESENDE</option>
+                                    <option value="PIUMHI">PIUMHI</option>
+                                    <option value="SÃO JOSÉ DA BARRA">SÃO JOSÉ DA BARRA</option>
+                                </optgroup>
+                                <optgroup label="São Paulo">
+                                    <option value="CACONDE">CACONDE</option>
+                                    <option value="CÂNDIDO MOTA">CÂNDIDO MOTA</option>
+                                    <option value="DIVINOLÂNDIA">DIVINOLÂNDIA</option>
+                                    <option value="ITOBI">ITOBI</option>
+                                    <option value="MOCOCA">MOCOCA</option>
+                                    <option value="PALMITAL">PALMITAL</option>
+                                    <option value="PARAGUAÇU PAULISTA">PARAGUAÇU PAULISTA</option>
+                                    <option value="SÃO JOSÉ DO RIO PARDO">SÃO JOSÉ DO RIO PARDO</option>
+                                    <option value="SÃO SEBASTIÃO DA GRAMA">SÃO SEBASTIÃO DA GRAMA</option>
+                                    <option value="TAPIRATIBA">TAPIRATIBA</option>
+                                    <option value="TARUMÃ">TARUMÃ</option>
+                                    <option value="VARGEM GRANDE DO SUL">VARGEM GRANDE DO SUL</option>
+                                </optgroup>
+                                <optgroup label="Mato Grosso do Sul">
+                                    <option value="AQUIDAUANA">AQUIDAUANA</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações de Localização -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-route"></i>
+                        Informações de Localização
+                    </h3>
+                    
+                    <!-- Endereço de Origem -->
+                    <div class="form-group">
+                        <label for="enderecoOrigem">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Endereço de Origem
+                        </label>
+                        <input type="text" id="enderecoOrigem" placeholder="Ex: Rua das Flores, 123 - Centro - São Paulo">
+                    </div>
+                    
+                    <!-- Paradas (Opcional) -->
+                    <div class="form-group">
+                        <div class="paradas-section-clean">
+                            <div class="paradas-header-clean">
+                                <label>
+                                    <i class="fas fa-route"></i>
+                                    Paradas (Opcional)
+                                </label>
+                                <button type="button" class="btn-add-parada-clean" onclick="addParada()">
+                                    <i class="fas fa-plus"></i>
+                                    Adicionar Parada
+                                </button>
+                            </div>
+                            <div class="paradas-container" id="paradas-container" style="display: none;">
+                                <div class="parada-item">
+                                    <div class="form-group">
+                                        <input type="text" class="parada-input" placeholder="Ex: Shopping Center, 789 - Centro - São Paulo">
+                                        <button type="button" class="btn-remove-parada" onclick="removeParada(this)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Endereço de Destino -->
+                    <div class="form-group">
+                        <label for="enderecoDestino">
+                            <i class="fas fa-flag-checkered"></i>
+                            Endereço de Destino
+                        </label>
+                        <input type="text" id="enderecoDestino" placeholder="Ex: Av. Principal, 456 - Bairro Novo - São Paulo">
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-sticky-note"></i>
+                        Observações Adicionais
+                    </h3>
+                    <div class="form-group full-width">
+                        <label for="observacoes">
+                            <i class="fas fa-comment-alt"></i>
+                            Observações
+                        </label>
+                        <textarea id="observacoes" placeholder="Detalhes importantes do agendamento, instruções especiais, etc..." rows="4"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="create-btn" id="createBtn">
+                        <i class="fas fa-plus-circle"></i>
+                        CRIAR AGENDAMENTO
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Seção de visualização dos agendamentos -->
+        <section class="agendamentos-section">
+            <div class="section-header">
+                <h2>Agendamentos</h2>
+            </div>
+            
+            <div class="tabs-container">
+                <!-- Abas e busca na mesma linha -->
+                <div class="tabs-and-search">
+                    <div class="tabs-wrapper">
+                        <button class="tab-btn active" data-tab="hoje">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            HOJE
+                        </button>
+                        <button class="tab-btn" data-tab="futuros">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                <circle cx="8" cy="16" r="2"></circle>
+                            </svg>
+                            FUTUROS
+                        </button>
+                        <button class="tab-btn" data-tab="concluidos">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20,6 9,17 4,12"></polyline>
+                            </svg>
+                            CONCLUÍDOS
+                        </button>
+                        <button class="tab-btn" data-tab="cancelados">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            CANCELADOS
+                        </button>
+                    </div>
+                    
+                    <!-- Sistema de Busca Compacto -->
+                    <div class="search-compact">
+                        <div class="search-input-container">
+                            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            <input type="text" id="searchInput" class="search-input" placeholder="Buscar...">
+                            <button class="clear-search" id="clearSearch">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="agendamentos-container" id="agendamentosContainer">
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <h3>Nenhum agendamento encontrado</h3>
+                    <p>Os agendamentos aparecerão aqui quando criados.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de edição -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-container">
+                    <i class="fas fa-edit modal-icon"></i>
+                    <h3>Editar Agendamento</h3>
+                </div>
+                <button class="close-modal" id="closeEditModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editForm">
+                <!-- Informações Básicas -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações Básicas
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editData">
+                                <i class="fas fa-calendar-alt"></i>
+                                Data *
+                            </label>
+                            <input type="date" id="editData" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editHorario">
+                                <i class="fas fa-clock"></i>
+                                Horário *
+                            </label>
+                            <input type="time" id="editHorario" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editNomeCliente">
+                                <i class="fas fa-user"></i>
+                                Nome do Cliente *
+                            </label>
+                            <input type="text" id="editNomeCliente" placeholder="Nome completo do cliente" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editNumeroContato">
+                                <i class="fas fa-phone"></i>
+                                Número de Contato *
+                            </label>
+                            <input type="tel" id="editNumeroContato" placeholder="(99) 99999-9999" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editAtendente">
+                                <i class="fas fa-user-tie"></i>
+                                Atendente *
+                            </label>
+                            <input type="text" id="editAtendente" placeholder="Nome do atendente" required readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editStatus">
+                                <i class="fas fa-info-circle"></i>
+                                Status *
+                            </label>
+                            <select id="editStatus" required>
+                                <option value="">Selecione o status...</option>
+                                <option value="Com Motorista">Com Motorista</option>
+                                <option value="Aguardando Motorista">Aguardando Motorista</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editCidade">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Cidade *
+                            </label>
+                            <select id="editCidade" required>
+                                <option value="">Selecione a cidade...</option>
+                                <optgroup label="Minas Gerais">
+                                    <option value="ALPINÓPOLIS">ALPINÓPOLIS</option>
+                                    <option value="ALTEROSA">ALTEROSA</option>
+                                    <option value="ARCEBURGO">ARCEBURGO</option>
+                                    <option value="AREADO">AREADO</option>
+                                    <option value="BAMBUÍ">BAMBUÍ</option>
+                                    <option value="BANDEIRA DO SUL">BANDEIRA DO SUL</option>
+                                    <option value="BOA ESPERANÇA">BOA ESPERANÇA</option>
+                                    <option value="BOM JESUS DA PENHA">BOM JESUS DA PENHA</option>
+                                    <option value="BOTELHOS">BOTELHOS</option>
+                                    <option value="CABO VERDE">CABO VERDE</option>
+                                    <option value="CAMPESTRE">CAMPESTRE</option>
+                                    <option value="CAMPO DO MEIO">CAMPO DO MEIO</option>
+                                    <option value="CAMPOS GERAIS">CAMPOS GERAIS</option>
+                                    <option value="CARMO DO RIO CLARO">CARMO DO RIO CLARO</option>
+                                    <option value="CAPITÓLIO">CAPITÓLIO</option>
+                                    <option value="CONCEIÇÃO DA APARECIDA">CONCEIÇÃO DA APARECIDA</option>
+                                    <option value="GUAPÉ">GUAPÉ</option>
+                                    <option value="GUARANÉSIA">GUARANÉSIA</option>
+                                    <option value="ILICÍNEA">ILICÍNEA</option>
+                                    <option value="JACUÍ">JACUÍ</option>
+                                    <option value="JURUAIA">JURUAIA</option>
+                                    <option value="MONTE BELO">MONTE BELO</option>
+                                    <option value="MONTE SANTO DE MINAS">MONTE SANTO DE MINAS</option>
+                                    <option value="MUZAMBINHO">MUZAMBINHO</option>
+                                    <option value="NEPOMUCENO">NEPOMUCENO</option>
+                                    <option value="NOVA RESENDE">NOVA RESENDE</option>
+                                    <option value="PIUMHI">PIUMHI</option>
+                                    <option value="SÃO JOSÉ DA BARRA">SÃO JOSÉ DA BARRA</option>
+                                </optgroup>
+                                <optgroup label="São Paulo">
+                                    <option value="CACONDE">CACONDE</option>
+                                    <option value="CÂNDIDO MOTA">CÂNDIDO MOTA</option>
+                                    <option value="DIVINOLÂNDIA">DIVINOLÂNDIA</option>
+                                    <option value="ITOBI">ITOBI</option>
+                                    <option value="MOCOCA">MOCOCA</option>
+                                    <option value="PALMITAL">PALMITAL</option>
+                                    <option value="PARAGUAÇU PAULISTA">PARAGUAÇU PAULISTA</option>
+                                    <option value="SÃO JOSÉ DO RIO PARDO">SÃO JOSÉ DO RIO PARDO</option>
+                                    <option value="SÃO SEBASTIÃO DA GRAMA">SÃO SEBASTIÃO DA GRAMA</option>
+                                    <option value="TAPIRATIBA">TAPIRATIBA</option>
+                                    <option value="TARUMÃ">TARUMÃ</option>
+                                    <option value="VARGEM GRANDE DO SUL">VARGEM GRANDE DO SUL</option>
+                                </optgroup>
+                                <optgroup label="Mato Grosso do Sul">
+                                    <option value="AQUIDAUANA">AQUIDAUANA</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações de Localização -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-route"></i>
+                        Informações de Localização
+                    </h3>
+                    
+                    <!-- Endereço de Origem -->
+                    <div class="form-group">
+                        <label for="editEnderecoOrigem">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Endereço de Origem
+                        </label>
+                        <input type="text" id="editEnderecoOrigem" placeholder="Ex: Rua das Flores, 123 - Centro - São Paulo">
+                    </div>
+                    
+                    <!-- Paradas (Opcional) -->
+                    <div class="form-group">
+                        <div class="paradas-section-clean">
+                            <div class="paradas-header-clean">
+                                <label>
+                                    <i class="fas fa-route"></i>
+                                    Paradas (Opcional)
+                                </label>
+                                <button type="button" class="btn-add-parada-clean" onclick="addEditParada()">
+                                    <i class="fas fa-plus"></i>
+                                    Adicionar Parada
+                                </button>
+                            </div>
+                            <div class="paradas-container" id="edit-paradas-container" style="display: none;">
+                                <div class="parada-item">
+                                    <div class="form-group">
+                                        <input type="text" class="parada-input" placeholder="Ex: Shopping Center, 789 - Centro - São Paulo">
+                                        <button type="button" class="btn-remove-parada" onclick="removeEditParada(this)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Endereço de Destino -->
+                    <div class="form-group">
+                        <label for="editEnderecoDestino">
+                            <i class="fas fa-flag-checkered"></i>
+                            Endereço de Destino
+                        </label>
+                        <input type="text" id="editEnderecoDestino" placeholder="Ex: Av. Principal, 456 - Bairro Novo - São Paulo">
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-sticky-note"></i>
+                        Observações Adicionais
+                    </h3>
+                    <div class="form-group full-width">
+                        <label for="editObservacoes">
+                            <i class="fas fa-comment-alt"></i>
+                            Observações
+                        </label>
+                        <textarea id="editObservacoes" placeholder="Detalhes importantes do agendamento, instruções especiais, etc..." rows="4"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelEdit" onclick="closeEditModal()">
+                        <i class="fas fa-arrow-left"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de cancelamento -->
+    <div class="modal" id="cancelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cancelar Agendamento</h3>
+                <button class="close-modal" id="closeCancelModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="cancelForm">
+                <div class="form-group full-width">
+                    <label>Motivo do Cancelamento *</label>
+                    <div class="cancel-reasons-grid">
+                        <div class="cancel-reason-option" onclick="selectCancelReason(this, 'Cliente desistiu da viagem')">
+                            <div class="cancel-reason-checkbox">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="cancel-reason-content">
+                                <div class="cancel-reason-icon">
+                                    <i class="fas fa-user-xmark"></i>
+                                </div>
+                                <div class="cancel-reason-text">
+                                    <div class="cancel-reason-label">Cliente desistiu da viagem</div>
+                                    <div class="cancel-reason-description">Cliente cancelou por motivos pessoais</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cancel-reason-option" onclick="selectCancelReason(this, 'Motorista não compareceu')">
+                            <div class="cancel-reason-checkbox">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="cancel-reason-content">
+                                <div class="cancel-reason-icon">
+                                    <i class="fas fa-car-side"></i>
+                                </div>
+                                <div class="cancel-reason-text">
+                                    <div class="cancel-reason-label">Motorista não compareceu</div>
+                                    <div class="cancel-reason-description">Motorista não apareceu no horário</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cancel-reason-option" onclick="selectCancelReason(this, 'Cliente não compareceu')">
+                            <div class="cancel-reason-checkbox">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="cancel-reason-content">
+                                <div class="cancel-reason-icon">
+                                    <i class="fas fa-user-clock"></i>
+                                </div>
+                                <div class="cancel-reason-text">
+                                    <div class="cancel-reason-label">Cliente não compareceu</div>
+                                    <div class="cancel-reason-description">Cliente não apareceu no local</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cancel-reason-option" onclick="selectCancelReason(this, 'Condições climáticas adversas')">
+                            <div class="cancel-reason-checkbox">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="cancel-reason-content">
+                                <div class="cancel-reason-icon">
+                                    <i class="fas fa-cloud-rain"></i>
+                                </div>
+                                <div class="cancel-reason-text">
+                                    <div class="cancel-reason-label">Condições climáticas adversas</div>
+                                    <div class="cancel-reason-description">Tempo ruim impediu a viagem</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cancel-reason-option" onclick="selectCancelReason(this, 'Problema no veículo')">
+                            <div class="cancel-reason-checkbox">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="cancel-reason-content">
+                                <div class="cancel-reason-icon">
+                                    <i class="fas fa-car-burst"></i>
+                                </div>
+                                <div class="cancel-reason-text">
+                                    <div class="cancel-reason-label">Problema no veículo</div>
+                                    <div class="cancel-reason-description">Defeito mecânico ou pane</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cancel-reason-option" onclick="selectCancelReason(this, 'Reagendamento solicitado')">
+                            <div class="cancel-reason-checkbox">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="cancel-reason-content">
+                                <div class="cancel-reason-icon">
+                                    <i class="fas fa-calendar-xmark"></i>
+                                </div>
+                                <div class="cancel-reason-text">
+                                    <div class="cancel-reason-label">Reagendamento solicitado</div>
+                                    <div class="cancel-reason-description">Cliente pediu para remarcar</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cancel-error-message" id="cancelErrorMessage">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Por favor, selecione um motivo para o cancelamento.
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelCancelation" onclick="closeCancelModal()">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </button>
+                    <button type="submit" class="btn-danger" id="confirmCancelAgendamentoBtn">
+                        <i class="fas fa-ban"></i> Confirmar Cancelamento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de transferência -->
+                <div class="modal share-modal" id="shareModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-title-container">
+                                <i class="fas fa-exchange-alt modal-icon"></i>
+                                <h3>Transferir Agendamento</h3>
+                            </div>
+                            <button class="close-modal" id="closeShareModal">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="share-content">
+                <!-- Informações do agendamento a ser transferido -->
+                <div class="agendamento-preview" id="agendamentoPreview">
+                    <div class="preview-header">
+                        <i class="fas fa-calendar-check section-icon"></i>
+                        <h4>Agendamento Selecionado</h4>
+                    </div>
+                    <div class="preview-info">
+                        <div class="preview-item">
+                            <i class="fas fa-user item-icon"></i>
+                            <strong>Cliente:</strong> <span id="previewCliente"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-calendar-days item-icon"></i>
+                            <strong>Data:</strong> <span id="previewData"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-clock item-icon"></i>
+                            <strong>Horário:</strong> <span id="previewHorario"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-map-marker-alt item-icon"></i>
+                            <strong>Cidade:</strong> <span id="previewCidade"></span>
+                        </div>
+                        <div class="preview-item" id="previewOriginalCreator" style="display: none;">
+                            <i class="fas fa-user-plus item-icon"></i>
+                            <strong>Criado originalmente por:</strong> <span id="previewOriginalCreatedBy"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seleção de usuário -->
+                <div class="user-selection">
+                    <div class="section-header">
+                        <i class="fas fa-users section-icon"></i>
+                        <h4>Destinatário</h4>
+                    </div>
+                    <p class="selection-hint">Selecione o atendente que receberá este agendamento</p>
+                    
+                    <div class="users-grid" id="usersGrid">
+                        <!-- Usuários serão carregados dinamicamente aqui -->
+                    </div>
+                    
+                    <!-- Campo oculto para armazenar o ID do usuário selecionado -->
+                    <input type="hidden" id="selectedUserId" value="">
+                </div>
+
+                <!-- Mensagem opcional -->
+                <div class="message-section">
+                    <div class="section-header">
+                        <i class="fas fa-message section-icon"></i>
+                        <h4>Mensagem (opcional)</h4>
+                    </div>
+                    <textarea 
+                        id="shareMessage" 
+                        class="share-message-input" 
+                        placeholder="Adicione uma mensagem para o usuário..."
+                        rows="3"
+                        maxlength="200"></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span>/200 caracteres
+                    </div>
+                </div>
+
+                <!-- Botões de ação -->
+                <div class="share-actions">
+                    <button type="button" class="btn-secondary" onclick="closeShareModal()">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn-primary" id="confirmShareBtn" onclick="confirmShare()">
+                            <i class="fas fa-exchange-alt"></i>
+                            Transferir
+                        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Localização -->
+    <div id="locationModal" class="modal location-modal">
+        <div class="modal-content location-modal-content system-window">
+            <div class="system-window-header">
+                <div class="system-window-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    Localização do Agendamento
+                </div>
+                <div class="system-window-controls">
+                    <button class="system-btn close-btn" id="closeLocationModal">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="system-window-body">
+                <div class="map-container">
+                    <div id="map" class="custom-map"></div>
+                    <div class="map-overlay">
+                        <div class="map-controls">
+                            <button id="zoomIn" class="map-control-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </button>
+                            <button id="zoomOut" class="map-control-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </button>
+                            <button id="centerMap" class="map-control-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="coordinates-info">
+                    <div class="location-details">
+                        <div class="city-info">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span><strong>Cidade:</strong> <span id="currentCity">Carregando...</span></span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal do WhatsApp -->
+    <div id="whatsappModal" class="modal whatsapp-modal">
+        <div class="modal-content whatsapp-modal-content">
+            <div class="modal-header">
+                <div class="modal-title-container">
+                    <i class="fa-brands fa-whatsapp modal-icon" style="color: #25D366;"></i>
+                    <h3>Compartilhar no WhatsApp</h3>
+                </div>
+                <button class="close-modal" id="closeWhatsappModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="whatsapp-content">
+                <!-- Informações do agendamento -->
+                <div class="agendamento-preview" id="whatsappAgendamentoPreview">
+                    <div class="preview-header">
+                        <i class="fas fa-calendar-check section-icon"></i>
+                        <h4>Dados do Agendamento</h4>
+                    </div>
+                    <div class="preview-info">
+                        <div class="preview-item">
+                            <i class="fas fa-user item-icon"></i>
+                            <strong>Cliente:</strong> <span id="whatsappPreviewCliente"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-calendar-days item-icon"></i>
+                            <strong>Data:</strong> <span id="whatsappPreviewData"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-clock item-icon"></i>
+                            <strong>Horário:</strong> <span id="whatsappPreviewHorario"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-map-marker-alt item-icon"></i>
+                            <strong>Cidade:</strong> <span id="whatsappPreviewCidade"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-phone item-icon"></i>
+                            <strong>Telefone:</strong> <span id="whatsappPreviewTelefone"></span>
+                        </div>
+                        <div class="preview-item">
+                            <i class="fas fa-headset item-icon"></i>
+                            <strong>Atendente:</strong> <span id="whatsappPreviewAtendente"></span>
+                        </div>
+                        <div class="preview-item" id="whatsappPreviewOrigemContainer" style="display: none;">
+                            <i class="fas fa-map-marker-alt item-icon" style="color: #28a745;"></i>
+                            <strong>Endereço de Origem:</strong> <span id="whatsappPreviewOrigem"></span>
+                        </div>
+                        <div class="preview-item" id="whatsappPreviewDestinoContainer" style="display: none;">
+                            <i class="fas fa-bullseye item-icon" style="color: #dc3545;"></i>
+                            <strong>Endereço de Destino:</strong> <span id="whatsappPreviewDestino"></span>
+                        </div>
+                        <div id="whatsappPreviewParadasContainer" style="display: none;">
+                            <!-- As paradas serão inseridas dinamicamente aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campo de observação adicional -->
+                <div class="whatsapp-form">
+                    <div class="section-header">
+                        <i class="fas fa-comment section-icon"></i>
+                        <h4>Observação Adicional</h4>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="observacaoWhatsapp">
+                            <i class="fas fa-sticky-note"></i>
+                            Observação para o Cliente
+                        </label>
+                        <textarea id="observacaoWhatsapp" placeholder="Informações extras para incluir na mensagem (opcional)..." rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- Preview da mensagem -->
+                <div class="message-preview">
+                    <div class="section-header">
+                        <i class="fa-brands fa-whatsapp section-icon" style="color: #25D366;"></i>
+                        <h4>Preview da Mensagem</h4>
+                    </div>
+                    <div class="whatsapp-message-preview" id="whatsappMessagePreview">
+                        <p>Complete os dados acima para ver o preview da mensagem...</p>
+                    </div>
+                </div>
+
+                <!-- Botões de ação -->
+                <div class="whatsapp-actions">
+                    <button type="button" class="btn-secondary" onclick="closeWhatsappModal()">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn-primary" id="copyWhatsappMessage" onclick="copyWhatsappMessage()" disabled>
+                        <i class="fas fa-copy"></i>
+                        Copiar Mensagem
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação Personalizado -->
+    <div id="confirmModal" class="modal confirm-modal">
+        <div class="modal-content confirm-modal-content">
+            <div class="confirm-header">
+                <div class="confirm-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div class="confirm-title">
+                    <h3 id="confirmTitle">Confirmação</h3>
+                    <p id="confirmMessage">Tem certeza que deseja continuar?</p>
+                </div>
+            </div>
+            <div class="confirm-actions">
+                <button type="button" class="btn-secondary" id="confirmCancelBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Cancelar
+                </button>
+                <button type="button" class="btn-primary" id="confirmOkBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+    </main>
+
+    <!-- Container de Toasts (será criado dinamicamente) -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="../utils/data-cleaner.js"></script>
+    <script src="../scripts/websocket-client.js"></script>
+    <script src="../scripts/notifications.js"></script>
+    <script src="../scripts/sound-manager.js"></script>
+    <script src="../scripts/voice-manager.js"></script>
+    <script src="../scripts/user-preferences.js"></script>
+    <script src="../scripts/search-system.js"></script>
+    <script src="../scripts/shareModal.js"></script>
+    <script src="../scripts/whatsapp-modal.js"></script>
+    <script src="../scripts/main.js"></script>
+</body>
+</html>
