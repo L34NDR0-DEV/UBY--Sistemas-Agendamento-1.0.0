@@ -2,6 +2,33 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.0.4] - 2024-12-20
+
+### 🎯 Novas Funcionalidades
+- **Sistema de Voz Especializado para Aquidauana**: Implementado sistema de voz diferenciado exclusivo para agendamentos da cidade de Aquidauana
+- **Voz Feminina Google Forçada**: Seleção automática e prioritária da voz feminina do Google para notificações de Aquidauana
+- **Mensagens Personalizadas**: Notificações de voz customizadas com identificação específica da cidade de Aquidauana
+- **Alertas de Atraso Diferenciados**: Sistema de alertas urgentes para agendamentos atrasados em Aquidauana
+
+### ✨ Melhorias
+- **Detecção Automática**: Sistema identifica automaticamente agendamentos de Aquidauana e aplica configurações especiais
+- **Prioridade Alta**: Notificações de Aquidauana recebem prioridade máxima na fila de processamento
+- **Volume Otimizado**: Volume aumentado (0.9 vs 0.7 padrão) para maior atenção em notificações de Aquidauana
+- **Notificações Críticas**: Alertas nativos do Windows com urgência crítica para atrasos em Aquidauana
+- **Cache Inteligente**: Sistema de prevenção de notificações duplicadas específico para Aquidauana
+
+### 🔧 Arquitetura
+- **Sistema Híbrido**: Mantém compatibilidade total com sistema de voz padrão para outras cidades
+- **Integração Seamless**: Funciona em conjunto com o sistema de lembretes existente
+- **Configurações Otimizadas**: Velocidade mais lenta (0.8), tom feminino (1.1) e volume alto para clareza
+
+### 📋 Detalhes Técnicos
+- Adicionado arquivo: `voice-manager-aquidauana.js`
+- Modificado: `reminder-system.js` com detecção automática de cidade
+- Atualizado: `main.html` com carregamento do novo sistema
+- Implementadas funções: `speakAgendamentoAquidauanaProximo`, `speakAgendamentoAquidauanaAtrasado`
+- Sistema de fila prioritária e limpeza automática de cache
+
 ## [1.0.3] - 2024-12-20
 
 ### 🔧 Correções

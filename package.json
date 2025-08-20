@@ -1,6 +1,6 @@
 {
   "name": "uby-agendamentos",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Sistema profissional de gestão de agendamentos para Windows 10 e 11",
   "main": "app/main.js",
   "author": "L34NDR0-DEV",
