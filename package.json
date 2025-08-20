@@ -1,6 +1,6 @@
 {
   "name": "uby-agendamentos",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sistema profissional de gestão de agendamentos para Windows 10 e 11",
   "main": "app/main.js",
   "author": "L34NDR0-DEV",
@@ -28,6 +28,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "compression": "^1.8.1",
     "electron-log": "^5.0.0",
     "electron-store": "^8.1.0",
     "electron-updater": "^6.0.0",

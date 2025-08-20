@@ -3409,4 +3409,64 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         initializeWebSocket();
     }, 2000);
+    
+    // Inicializar sistema de otimização de performance
+    setTimeout(() => {
+        initializeOptimizationSystem();
+    }, 1000);
 });
+
+// Função para inicializar sistema de otimização
+function initializeOptimizationSystem() {
+    try {
+        console.log('[INFO] Iniciando carregamento do sistema de otimização...');
+        
+        // Carrega o loader de otimização
+        const script = document.createElement('script');
+        script.src = '../utils/optimization-loader.js';
+        script.async = true;
+        
+        script.onload = () => {
+            console.log('[SUCCESS] Loader de otimização carregado');
+            
+            // Aguarda um pouco e então carrega todos os sistemas
+            setTimeout(() => {
+                if (window.loadOptimizationSystems) {
+                    window.loadOptimizationSystems()
+                        .then(() => {
+                            console.log('[SUCCESS] Sistema de otimização inicializado com sucesso');
+                            
+                            // Adiciona listener para quando sistemas estiverem prontos
+                            document.addEventListener('optimizationSystemsLoaded', (event) => {
+                                console.log('[SUCCESS] Todos os sistemas de otimização estão ativos:', event.detail);
+                                
+                                // Opcional: mostrar status de otimização
+                                if (window.performanceOptimizer && window.performanceOptimizer.isOptimizationActive) {
+                                    console.log('[INFO] Otimizações ativadas para máquina lenta');
+                                } else {
+                                    console.log('[INFO] Máquina com boa performance - otimizações em standby');
+                                }
+                            });
+                        })
+                        .catch((error) => {
+                            console.warn('[WARNING] Erro ao carregar sistema de otimização:', error);
+                            console.log('[INFO] Aplicação continuará funcionando normalmente sem otimizações');
+                        });
+                } else {
+                    console.warn('[WARNING] Função loadOptimizationSystems não encontrada');
+                }
+            }, 500);
+        };
+        
+        script.onerror = () => {
+            console.warn('[WARNING] Falha ao carregar sistema de otimização');
+            console.log('[INFO] Aplicação continuará funcionando normalmente sem otimizações');
+        };
+        
+        document.head.appendChild(script);
+        
+    } catch (error) {
+        console.warn('[WARNING] Erro na inicialização do sistema de otimização:', error);
+        console.log('[INFO] Aplicação continuará funcionando normalmente sem otimizações');
+    }
+}

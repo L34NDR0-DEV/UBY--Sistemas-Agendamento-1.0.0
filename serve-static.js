@@ -1,7 +1,11 @@
 const express = require('express');
 const path = require('path');
+const compression = require('compression');
 const app = express();
 const PORT = 3001;
+
+// Habilitar compressão gzip
+app.use(compression());
 
 // Servir arquivos estáticos da pasta src
 app.use('/src', express.static(path.join(__dirname, 'src'), {
@@ -11,11 +15,14 @@ app.use('/src', express.static(path.join(__dirname, 'src'), {
         } else if (filePath.endsWith('.css')) {
             res.setHeader('Content-Type', 'text/css');
         }
-    }
+    },
+    maxAge: '1d' // Adiciona cache de 1 dia
 }));
 
 // Servir arquivos estáticos da pasta assets
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+    maxAge: '1d' // Adiciona cache de 1 dia
+}));
 
 // Servir arquivos estáticos da raiz para compatibilidade
 app.use(express.static(__dirname, {
@@ -25,7 +32,8 @@ app.use(express.static(__dirname, {
         } else if (filePath.endsWith('.css')) {
             res.setHeader('Content-Type', 'text/css');
         }
-    }
+    },
+    maxAge: '1d' // Adiciona cache de 1 dia
 }));
 
 // Rota para login

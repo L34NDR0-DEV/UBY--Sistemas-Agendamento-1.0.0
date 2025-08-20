@@ -1995,7 +1995,7 @@ input:checked + .toggle-slider:before {
     margin-top: 30px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+    gap: 20px;
     justify-content: start;
     align-items: start;
     /* Garantir que o container seja visível */
@@ -2005,7 +2005,7 @@ input:checked + .toggle-slider:before {
     position: relative !important;
     z-index: 1 !important;
     background: transparent !important;
-    padding: 0 30px;
+    padding: 0 20px;
     /* Garantir que os cards não se estiquem */
     justify-items: stretch;
 }

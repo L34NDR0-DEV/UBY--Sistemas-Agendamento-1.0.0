@@ -4,6 +4,7 @@ const path = require('path');
 const Store = require('electron-store');
 const fs = require('fs');
 const os = require('os');
+
 // WebSocket server files removed - connecting to external server on port 3000
 
 // Configuração do armazenamento
