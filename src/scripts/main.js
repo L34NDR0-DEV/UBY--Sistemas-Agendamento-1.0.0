@@ -3414,6 +3414,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         initializeOptimizationSystem();
     }, 1000);
+    
+    // Inicializar sistema de atualização
+    setTimeout(() => {
+        if (window.modernUpdateManager) {
+            console.log('[SUCCESS] Sistema de atualização já inicializado');
+        } else {
+            console.log('[INFO] Aguardando inicialização do sistema de atualização...');
+        }
+    }, 2000);
 });
 
 // Função para inicializar sistema de otimização
