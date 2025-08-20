@@ -385,7 +385,11 @@ function setupEventListeners() {
         themeBtn.addEventListener('click', toggleTheme);
     }
     
-
+    // Event listener para mudança de cidade (fuso horário)
+    const cidadeSelect = document.getElementById('cidade');
+    if (cidadeSelect) {
+        cidadeSelect.addEventListener('change', handleCidadeChange);
+    }
     
     // Event listeners do painel de controle removidos
     
@@ -651,9 +655,22 @@ async function handleCreateAgendamento(e) {
     // Coletar paradas dinamicamente
     const paradas = collectParadas();
     
+    // Obter dados básicos
+    const rawData = formData.get('data') || document.getElementById('data').value;
+    const rawHorario = formData.get('horario') || document.getElementById('horario').value;
+    const cidade = formData.get('cidade') || document.getElementById('cidade').value;
+    
+    // Ajustar horário baseado no fuso horário da cidade
+    let adjustedHorario = rawHorario;
+    if (window.timezoneManager && cidade) {
+        // Converter horário local da cidade para horário de Brasília (para armazenamento)
+        adjustedHorario = window.timezoneManager.adjustTime(rawHorario, cidade, false);
+        console.log(`Horário ajustado para ${cidade}: ${rawHorario} -> ${adjustedHorario} (Brasília)`);
+    }
+    
     const agendamento = {
-        data: formData.get('data') || document.getElementById('data').value,
-        horario: formData.get('horario') || document.getElementById('horario').value,
+        data: rawData,
+        horario: adjustedHorario, // Horário ajustado para Brasília
         nomeCliente: formData.get('nomeCliente') || document.getElementById('nomeCliente').value,
         numeroContato: formData.get('numeroContato') || document.getElementById('numeroContato').value,
         atendente: formData.get('atendente') || document.getElementById('atendente').value,
@@ -913,7 +930,7 @@ function createAgendamentoCard(agendamento) {
                 </div>
                 <div class="postit-row">
                     <span class="icon"><i class="fa-solid fa-clock"></i></span>
-                    <span class="postit-label">Hora:</span> <span class="postit-value">${agendamento.horario}</span>
+                    <span class="postit-label">Hora:</span> <span class="postit-value">${window.timezoneManager ? window.timezoneManager.formatTimeWithTimezone(agendamento.horario, agendamento.cidade) : agendamento.horario}</span>
                 </div>
                 <div class="postit-row">
                     <span class="icon"><i class="fa-solid fa-phone"></i></span>
@@ -1577,9 +1594,7 @@ function createTestLateAppointment() {
     // Forçar verificação imediata
     setTimeout(() => {
         checkForgottenAgendamentos();
-        if (window.notificationSystem) {
-            window.notificationSystem.checkAppointments();
-        }
+
     }, 1000);
 }
 
@@ -1589,56 +1604,75 @@ window.createTestLateAppointment = createTestLateAppointment;
 function checkForgottenAgendamentos() {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().slice(0, 5);
     
     console.log('[DEBUG] Verificando agendamentos atrasados:', {
         today,
-        currentTime,
         totalAgendamentos: agendamentos.length
     });
     
     agendamentos.forEach(agendamento => {
         if (agendamento.data === today && 
             agendamento.status !== 'Concluído' && 
-            agendamento.status !== 'Cancelado' &&
-            agendamento.horario < currentTime) {
+            agendamento.status !== 'Cancelado') {
             
-            const appointmentDateTime = new Date(`${agendamento.data}T${agendamento.horario}:00`);
-            const timeDiff = now - appointmentDateTime;
+            // Ajustar comparação para fuso horário da cidade
+            let appointmentDateTime, currentTime;
+            
+            if (window.timezoneManager && agendamento.cidade && window.timezoneManager.hasDifferentTimezone(agendamento.cidade)) {
+                // Para cidades com fuso diferente, ajustar o horário atual para comparação
+                appointmentDateTime = new Date(`${agendamento.data}T${agendamento.horario}:00`);
+                currentTime = window.timezoneManager.adjustDateTime(now, agendamento.cidade, true);
+            } else {
+                // Para outras cidades, usar horário de Brasília
+                appointmentDateTime = new Date(`${agendamento.data}T${agendamento.horario}:00`);
+                currentTime = now;
+            }
+            
+            const timeDiff = currentTime - appointmentDateTime;
             const minutesLate = Math.floor(timeDiff / (1000 * 60));
             
-            console.log('[DEBUG] Agendamento atrasado encontrado:', {
-                cliente: agendamento.nomeCliente,
-                horario: agendamento.horario,
-                minutosAtraso: minutesLate,
-                status: agendamento.status
-            });
-            
-            // Avisar a cada 5 minutos para atrasos até 30 minutos, depois a cada 15 minutos
-            const shouldNotify = (minutesLate <= 30 && minutesLate % 5 === 0) || 
-                               (minutesLate > 30 && minutesLate % 15 === 0);
-            
-            if (minutesLate > 0 && shouldNotify) {
-                console.log('[DEBUG] Enviando notificação de voz para atraso:', {
+            // Só processar se estiver realmente atrasado
+            if (minutesLate > 0) {
+                console.log('[DEBUG] Agendamento atrasado encontrado:', {
                     cliente: agendamento.nomeCliente,
+                    cidade: agendamento.cidade,
+                    horario: agendamento.horario,
                     minutosAtraso: minutesLate,
-                    voiceManagerDisponivel: !!window.voiceManager,
-                    voiceEnabled: window.voiceManager ? window.voiceManager.isEnabled() : false
+                    status: agendamento.status
                 });
+            
+                // Avisar a cada 5 minutos para atrasos até 30 minutos, depois a cada 15 minutos
+                const shouldNotify = (minutesLate <= 30 && minutesLate % 5 === 0) || 
+                                   (minutesLate > 30 && minutesLate % 15 === 0);
                 
-                if (window.voiceManager) {
-                    if (window.voiceManager.isEnabled()) {
-                        window.voiceManager.speakAgendamentoAtrasado(agendamento.nomeCliente, minutesLate);
-                        console.log('[DEBUG] Notificação de voz enviada com sucesso');
-                    } else {
-                        console.warn('[DEBUG] Notificações de voz estão desabilitadas');
-                    }
-                } else {
-                    console.warn('[DEBUG] VoiceManager não está disponível');
-                }
-            }
-        }
-    });
+                if (shouldNotify) {
+                    console.log('[DEBUG] Enviando notificação de voz para atraso:', {
+                        cliente: agendamento.nomeCliente,
+                        cidade: agendamento.cidade,
+                        minutosAtraso: minutesLate,
+                        voiceManagerDisponivel: !!window.voiceManager,
+                        voiceEnabled: window.voiceManager ? window.voiceManager.isEnabled() : false
+                    });
+                    
+                    if (window.voiceManager) {
+                        if (window.voiceManager.isEnabled()) {
+                            window.voiceManager.speakAgendamentoAtrasado(
+                                agendamento.nomeCliente, 
+                                agendamento.horario, 
+                                agendamento.cidade, 
+                                minutesLate
+                            );
+                             console.log('[DEBUG] Notificação de voz enviada com sucesso');
+                         } else {
+                             console.warn('[DEBUG] Notificações de voz estão desabilitadas');
+                         }
+                     } else {
+                         console.warn('[DEBUG] VoiceManager não está disponível');
+                     }
+                 }
+             }
+         }
+     });
 }
 
 // Mostrar notificação
@@ -2123,46 +2157,14 @@ window.openLocationModal = openLocationModal;
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Listener para fechar modal com ESC e atalho de limpeza automática
+    // Listener para atalho de limpeza automática
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const notificationsPanel = document.getElementById('notificationsPanel');
-            if (notificationsPanel && notificationsPanel.style.display === 'block') {
-                if (window.notificationSystem) {
-                    window.notificationSystem.closePanel();
-                }
-            }
-        }
-        
         // Atalho Ctrl+Shift+Delete para limpeza automática
         if (e.ctrlKey && e.shiftKey && e.key === 'Delete') {
             e.preventDefault();
             quickAutoClear();
         }
     });
-    
-    // Event listeners para notificações
-    const notificationsBtn = document.getElementById('notificationsBtn');
-    if (notificationsBtn) {
-        notificationsBtn.addEventListener('click', () => {
-
-        });
-    }
-    
-    const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
-    if (closeNotificationsBtn) {
-        closeNotificationsBtn.addEventListener('click', () => {
-            
-        });
-    }
-    
-    const markAllReadBtn = document.getElementById('markAllReadBtn');
-
-    
-    // Carregar notificações ao inicializar
-
-    
-
 });
 
 // Sistema de busca removido - interface simplificada
@@ -3378,22 +3380,7 @@ function toggleFormCollapse() {
 // Inicialização simplificada sem sistema de busca
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Inicializar sistema de notificações se ainda não foi inicializado
-    if (!window.notificationSystem && window.NotificationSystem) {
-        window.notificationSystem = new window.NotificationSystem();
-        window.notificationSystem.init();
-        console.log('[SUCCESS] Sistema de notificações inicializado e configurado');
-        
 
-    } else if (window.notificationSystem) {
-        console.log('[INFO] Sistema de notificações já inicializado');
-        // Garantir que está inicializado
-        if (typeof window.notificationSystem.init === 'function') {
-            window.notificationSystem.init();
-        }
-    } else {
-        console.warn('[WARNING] NotificationSystem não encontrado');
-    }
     
     // Inicializar eventos das paradas dinâmicas
     initializeParadasEvents();
@@ -3477,5 +3464,26 @@ function initializeOptimizationSystem() {
     } catch (error) {
         console.warn('[WARNING] Erro na inicialização do sistema de otimização:', error);
         console.log('[INFO] Aplicação continuará funcionando normalmente sem otimizações');
+    }
+}
+
+// Função para lidar com mudança de cidade (fuso horário)
+function handleCidadeChange() {
+    const cidadeSelect = document.getElementById('cidade');
+    const timezoneInfo = document.getElementById('timezone-info');
+    const timezoneText = document.getElementById('timezone-text');
+    
+    if (!cidadeSelect || !timezoneInfo || !timezoneText) {
+        return;
+    }
+    
+    const cidadeSelecionada = cidadeSelect.value;
+    
+    if (window.timezoneManager && window.timezoneManager.hasDifferentTimezone(cidadeSelecionada)) {
+        const timezoneConfig = window.timezoneManager.getTimezoneInfo(cidadeSelecionada);
+        timezoneText.textContent = `Horário local de ${cidadeSelecionada}: ${timezoneConfig.offsetText} em relação a Brasília`;
+        timezoneInfo.style.display = 'flex';
+    } else {
+        timezoneInfo.style.display = 'none';
     }
 }

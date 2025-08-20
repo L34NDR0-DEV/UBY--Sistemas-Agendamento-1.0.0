@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Notification } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const Store = require('electron-store');
@@ -595,6 +595,76 @@ ipcMain.handle('clearAllNotifications', async () => {
 // Handler para buscar usuários (atualizado para usar users.json)
 ipcMain.handle('getUsers', async () => {
   return loadUsers().users || [];
+});
+
+// ===== SISTEMA DE NOTIFICAÇÕES NATIVAS DO WINDOWS =====
+
+// Função para mostrar notificação nativa do Windows
+function showNativeNotification(title, body, options = {}) {
+  if (!Notification.isSupported()) {
+    console.warn('[NOTIFICATION] Notificações não são suportadas neste sistema');
+    return false;
+  }
+
+  try {
+    const notification = new Notification({
+      title: title,
+      body: body,
+      icon: path.join(__dirname, '..', 'assets', 'logo-system.ico'),
+      sound: options.sound !== false, // Por padrão, reproduz som
+      urgency: options.urgency || 'normal', // low, normal, critical
+      timeoutType: options.timeoutType || 'default', // default, never
+      silent: options.silent || false
+    });
+
+    notification.on('click', () => {
+      console.log('[NOTIFICATION] Notificação clicada');
+      // Focar na janela principal se estiver minimizada
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) {
+          mainWindow.restore();
+        }
+        mainWindow.focus();
+      }
+    });
+
+    notification.show();
+    console.log(`[NOTIFICATION] Notificação nativa exibida: ${title}`);
+    return true;
+  } catch (error) {
+    console.error('[NOTIFICATION] Erro ao exibir notificação nativa:', error);
+    return false;
+  }
+}
+
+// Handler para mostrar notificação nativa via IPC
+ipcMain.handle('showNativeNotification', async (event, data) => {
+  const { title, body, options } = data;
+  const success = showNativeNotification(title, body, options);
+  return { success };
+});
+
+// Handler para verificar se notificações são suportadas
+ipcMain.handle('isNotificationSupported', async () => {
+  return { supported: Notification.isSupported() };
+});
+
+// Função para notificar agendamentos atrasados
+function notifyDelayedAppointment(agendamento) {
+  const title = 'Agendamento Atrasado!';
+  const body = `${agendamento.cliente} - ${agendamento.cidade}\nHorário: ${agendamento.horario}`;
+  
+  showNativeNotification(title, body, {
+    urgency: 'critical',
+    sound: true,
+    timeoutType: 'never' // Não desaparece automaticamente
+  });
+}
+
+// Handler para notificar agendamento atrasado via IPC
+ipcMain.handle('notifyDelayedAppointment', async (event, agendamento) => {
+  notifyDelayedAppointment(agendamento);
+  return { success: true };
 });
 
 // ===== SISTEMA DE PREFERÊNCIAS DE USUÁRIO =====

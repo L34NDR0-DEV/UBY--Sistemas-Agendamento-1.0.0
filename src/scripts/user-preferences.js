@@ -201,9 +201,7 @@ class UserPreferencesManager {
      */
     applyNotificationSettings() {
         // Atualizar sistema de notificações se disponível
-        if (window.notificationSystem) {
-            window.notificationSystem.settings.enabled = this.preferences.notificationsEnabled;
-        }
+
         
         console.log(`[PREFERENCES] Notificações configuradas: enabled=${this.preferences.notificationsEnabled}`);
     }

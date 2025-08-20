@@ -329,7 +329,16 @@ class VoiceManager {
      * Métodos específicos para diferentes tipos de notificação
      */
     speakAgendamentoCriado(nomeCliente, horario, cidade) {
-        const text = `Novo agendamento criado para ${nomeCliente} às ${horario} em ${cidade}`;
+        const horarioLocal = this.formatTimeForSpeech(horario, cidade);
+        let text = `Novo agendamento criado para ${nomeCliente} às ${horarioLocal}`;
+        
+        // Adicionar informação da cidade e fuso horário se for Aquidauana
+        if (window.timezoneManager && window.timezoneManager.hasDifferentTimezone(cidade)) {
+            text += ` em ${cidade}, horário local`;
+        } else {
+            text += ` em ${cidade}`;
+        }
+        
         this.speak(text, { priority: 0 });
     }
     
@@ -338,41 +347,96 @@ class VoiceManager {
         this.speak(text, { priority: 0 });
     }
     
-    speakAgendamentoProximo(nomeCliente, minutosRestantes) {
-        const tempoFormatado = this.formatMinutesForSpeech(minutosRestantes);
-        const text = `Lembrete: agendamento de ${nomeCliente} em ${tempoFormatado}`;
+    speakAgendamentoProximo(nomeCliente, horario, cidade, minutosRestantes) {
+        const horarioLocal = this.formatTimeForSpeech(horario, cidade);
+        let text;
         
-        let priority = 0;
-        if (minutosRestantes <= 5) {
-            priority = 2; // Urgente
-        } else if (minutosRestantes <= 15) {
-            priority = 1; // Alta
+        const cidadeInfo = window.timezoneManager && window.timezoneManager.hasDifferentTimezone(cidade) 
+            ? `${cidade}, horário local` 
+            : cidade;
+        
+        if (minutosRestantes <= 0) {
+            text = `Agendamento de ${nomeCliente} às ${horarioLocal} em ${cidadeInfo} está começando agora`;
+        } else if (minutosRestantes <= 5) {
+            text = `Agendamento de ${nomeCliente} às ${horarioLocal} em ${cidadeInfo} em ${minutosRestantes} minutos`;
+        } else {
+            text = `Próximo agendamento: ${nomeCliente} às ${horarioLocal} em ${cidadeInfo} em ${minutosRestantes} minutos`;
         }
-        
-        this.speak(text, { priority });
+        this.speak(text, { priority: 1 });
     }
     
-    speakAgendamentoAtrasado(nomeCliente, minutosAtraso) {
+    speakAgendamentoAtrasado(nomeCliente, horario, cidade, minutosAtraso) {
         console.log('[VoiceManager] speakAgendamentoAtrasado chamado:', {
             nomeCliente,
+            horario,
+            cidade,
             minutosAtraso,
             enabled: this.enabled,
             synthesis: !!this.synthesis
         });
         
+        const horarioLocal = this.formatTimeForSpeech(horario, cidade);
+        const cidadeInfo = window.timezoneManager && window.timezoneManager.hasDifferentTimezone(cidade) 
+            ? `${cidade}, horário local` 
+            : cidade;
+        
         const tempoFormatado = this.formatMinutesForSpeech(minutosAtraso);
-        const text = `Atenção! Agendamento de ${nomeCliente} está atrasado em ${tempoFormatado}`;
+        const text = `Atenção! Agendamento de ${nomeCliente} às ${horarioLocal} em ${cidadeInfo} está atrasado em ${tempoFormatado}`;
         
         console.log('[VoiceManager] Texto a ser falado:', text);
+        
+        // Mostrar notificação nativa do Windows
+        this.showNativeNotification({
+            cliente: nomeCliente,
+            horario: horario,
+            cidade: cidade,
+            minutosAtraso: minutosAtraso
+        });
         
         this.speakUrgent(text, { 
             volume: Math.min(this.volume + 0.2, 1)
         });
     }
     
-    speakAgendamentoAtualizado(nomeCliente) {
-        const text = `Agendamento de ${nomeCliente} foi atualizado com sucesso`;
+    speakAgendamentoAtualizado(nomeCliente, horario, cidade) {
+        const horarioLocal = this.formatTimeForSpeech(horario, cidade);
+        const cidadeInfo = window.timezoneManager && window.timezoneManager.hasDifferentTimezone(cidade) 
+            ? `${cidade}, horário local` 
+            : cidade;
+        
+        const text = `Agendamento de ${nomeCliente} foi atualizado para ${horarioLocal} em ${cidadeInfo}`;
         this.speak(text, { priority: 0 });
+    }
+    
+    // Método para mostrar notificação nativa do Windows
+    async showNativeNotification(agendamento) {
+        if (!window.ipcRenderer) {
+            console.warn('[VoiceManager] ipcRenderer não disponível para notificações nativas');
+            return;
+        }
+        
+        try {
+            const title = 'Agendamento Atrasado!';
+            const body = `${agendamento.cliente} - ${agendamento.cidade}\nHorário: ${agendamento.horario}\nAtraso: ${agendamento.minutosAtraso} minutos`;
+            
+            const result = await window.ipcRenderer.invoke('showNativeNotification', {
+                title: title,
+                body: body,
+                options: {
+                    urgency: 'critical',
+                    sound: true,
+                    timeoutType: 'never'
+                }
+            });
+            
+            if (result.success) {
+                console.log('[VoiceManager] Notificação nativa exibida com sucesso');
+            } else {
+                console.warn('[VoiceManager] Falha ao exibir notificação nativa');
+            }
+        } catch (error) {
+            console.error('[VoiceManager] Erro ao exibir notificação nativa:', error);
+        }
     }
     
     speakAgendamentoCancelado(nomeCliente) {
@@ -445,6 +509,24 @@ class VoiceManager {
         } else {
             return dateObj.toLocaleDateString('pt-BR');
         }
+    }
+    
+    /**
+     * Formatar horário para fala considerando fuso horário da cidade
+     */
+    formatTimeForSpeech(horario, cidade) {
+        if (!window.timezoneManager || !cidade) {
+            return horario;
+        }
+        
+        // Se a cidade tem fuso horário diferente, usar o horário local
+        if (window.timezoneManager.hasDifferentTimezone(cidade)) {
+            const horarioLocal = window.timezoneManager.formatTimeWithTimezone(horario, cidade);
+            // Remover a indicação de fuso horário para a fala (ex: "14:30 (Aquidauana)" -> "14:30")
+            return horarioLocal.split(' ')[0];
+        }
+        
+        return horario;
     }
 }
 

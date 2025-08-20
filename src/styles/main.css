@@ -423,16 +423,9 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Botão de Notificações */
-.notificacoes-btn {
-    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-    border-color: rgba(255, 255, 255, 0.3);
-}
 
-.notificacoes-btn:hover {
-    background: linear-gradient(135deg, #FF7A47 0%, #F8A42F 100%);
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
-}
+
+
 
 /* Botão de Recolher/Expandir */
 #collapseBtn {
@@ -451,23 +444,7 @@ body {
     margin-right: 6px;
 }
 
-.notification-badge {
-    background: #FF3B30;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    border: 2px solid white;
-    animation: pulse 2s infinite;
-}
+
 
 /* Botão de Configurações */
 .configuracoes-btn {
@@ -1560,6 +1537,23 @@ input:checked + .toggle-slider:before {
 .form-group textarea {
     resize: vertical;
     min-height: 80px;
+}
+
+.timezone-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #FF6B00;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.timezone-info i {
+    font-size: 14px;
 }
 
 .create-btn {

@@ -2,6 +2,27 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.0.3] - 2024-12-20
+
+### 🔧 Correções
+- **Sistema de Notificações**: Removido completamente o sistema de notificações HTML/CSS/JS anterior
+- **Notificações Nativas**: Implementado sistema de notificações nativas do Windows via Electron
+- **Sintaxe JavaScript**: Corrigidos erros de sintaxe no arquivo `main.js` (linha 2167)
+- **Código Órfão**: Removido código residual da remoção do sistema de notificações
+- **Interface**: Atualizado contador de versão na tela de login para v1.0.3
+
+### ✨ Melhorias
+- **Integração com SO**: Notificações agora aparecem na barra de notificações do Windows
+- **Urgência Crítica**: Notificações de agendamentos atrasados configuradas com alta prioridade
+- **Som Nativo**: Notificações incluem som do sistema operacional
+- **Persistência**: Notificações permanecem visíveis até serem dispensadas pelo usuário
+
+### 📋 Detalhes Técnicos
+- Removidos arquivos: `notifications.js`, `notifications.css`, `notifications.json`
+- Adicionadas funções `showNativeNotification` e `notifyDelayedAppointment` no processo principal
+- Integração com `voice-manager.js` para notificações automáticas
+- Handlers IPC para comunicação entre processos
+
 ## [1.0.2] - 2024-08-20
 
 ### 🔧 Correções
